@@ -59,7 +59,8 @@ export function createTriggerRoutes(): Router {
     // Trigger sil
     router.delete('/:chatId/:word', (req: Request, res: Response): void => {
         try {
-            const { chatId, word } = req.params;
+            const chatId = req.params.chatId as string;
+            const word = req.params.word as string;
             let triggerWord = decodeURIComponent(word).toLowerCase();
             if (!triggerWord.startsWith('!')) {
                 triggerWord = '!' + triggerWord;
