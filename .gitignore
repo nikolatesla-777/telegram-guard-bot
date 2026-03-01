@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+*.db
+*.sqlite
+*.db-shm
+*.db-wal
+uploads/
+*.log
+debug_*.log
+api_errors.log
