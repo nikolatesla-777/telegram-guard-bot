@@ -6,7 +6,7 @@ import { SpamConfig } from '../../database/models';
 // Varsayılan kara liste
 export const defaults = [
     'yatırım fırsatı', 'kripto fırsat', 'whatsapp grubu',
-    'bcgame', 'bc.game', 'bc slots',
+    'bc', 'bcgame', 'bc.game', 'bc slots',
     'promocode', 'code', 'dm', 'özelden'
 ];
 
