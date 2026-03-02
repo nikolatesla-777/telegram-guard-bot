@@ -5,11 +5,9 @@ import { SpamConfig } from '../../database/models';
 
 // Varsayılan kara liste
 export const defaults = [
-    'casino', 'bahis', 'slot', 'canlı bahis',
-    'kazan', 'yatırım fırsatı', 'hemen kazan',
-    'kripto fırsat', 'whatsapp grubu',
-    'bcgame', 'bc.game', 'bc slots', 'freespin', 'bonus',
-    'aviator', 'dede', 'bonanza'
+    'yatırım fırsatı', 'kripto fırsat', 'whatsapp grubu',
+    'bcgame', 'bc.game', 'bc slots',
+    'promocode', 'code', 'dm', 'özelden'
 ];
 
 function getBlacklistedWords(chatId: string): string[] {
