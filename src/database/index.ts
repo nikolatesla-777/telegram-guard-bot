@@ -113,6 +113,17 @@ function initTables(): void {
     )
   `);
 
+  // Otomatik iletim konfigürasyonu
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS auto_forward_config (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      source_chat_id TEXT NOT NULL,
+      target_chat_id TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(source_chat_id, target_chat_id)
+    )
+  `);
+
   console.log('✅ Veritabanı tabloları hazır.');
 }
 
