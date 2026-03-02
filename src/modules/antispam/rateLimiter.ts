@@ -57,9 +57,6 @@ export async function checkRateLimit(ctx: Context): Promise<boolean> {
                 until_date: Math.floor(Date.now() / 1000) + 300,
             });
             await ctx.deleteMessage();
-            await ctx.reply(
-                `⚠️ @${ctx.from?.username || userId} çok hızlı mesaj gönderiyor. 5 dakika susturuldu.`,
-            );
             // Sayacı sıfırla
             record.timestamps = [];
         } catch (err) {

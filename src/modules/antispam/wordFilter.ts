@@ -58,9 +58,6 @@ export async function checkBlacklistedWords(ctx: Context): Promise<boolean> {
     if (foundWord) {
         try {
             await ctx.deleteMessage();
-            await ctx.reply(
-                `🚫 @${ctx.from?.username || userId} yasaklı içerik tespit edildi. Mesajınız silindi.`,
-            );
             console.log(`[WordFilter] Kullanıcı ${userId} yasaklı kelime kullandı: "${foundWord}"`);
         } catch (err) {
             console.error('Kelime filtreleme sırasında hata:', err);

@@ -70,9 +70,6 @@ export async function checkDuplicate(ctx: Context): Promise<boolean> {
             }, {
                 until_date: Math.floor(Date.now() / 1000) + 120,
             });
-            await ctx.reply(
-                `🔁 @${ctx.from?.username || userId} aynı mesajı tekrar tekrar gönderiyor. 2 dakika susturuldu.`,
-            );
             // Geçmişi temizle
             history.hashes = [];
         } catch (err) {

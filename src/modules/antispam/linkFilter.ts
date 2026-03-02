@@ -38,9 +38,6 @@ export async function checkLinks(ctx: Context): Promise<boolean> {
     if (hasBlockedLink) {
         try {
             await ctx.deleteMessage();
-            await ctx.reply(
-                `⚠️ @${ctx.from?.username || userId} link paylaşımı bu grupta kısıtlıdır. Mesajınız silindi.`,
-            );
         } catch (err) {
             console.error('Link filtreleme sırasında hata:', err);
         }
