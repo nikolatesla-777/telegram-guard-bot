@@ -113,6 +113,19 @@ function initTables(): void {
     )
   `);
 
+  // Zamanlanmış iletimler
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS scheduled_forwards (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      source_chat_id TEXT NOT NULL,
+      message_id INTEGER NOT NULL,
+      target_chat_id TEXT NOT NULL,
+      cron_expression TEXT NOT NULL,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
   // Otomatik iletim konfigürasyonu
   database.exec(`
     CREATE TABLE IF NOT EXISTS auto_forward_config (

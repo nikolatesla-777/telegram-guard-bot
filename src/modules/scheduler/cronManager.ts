@@ -3,8 +3,10 @@ import { Bot, Context, InputFile } from 'grammy';
 import { InlineKeyboard } from 'grammy';
 import { listPosts } from './postStore';
 import { ScheduledPost } from '../../database/models';
+import { getDb } from '../../database';
 
 const activeTasks = new Map<number, ScheduledTask>();
+const forwardTasks: ScheduledTask[] = [];
 
 // Inline keyboard oluştur
 function buildInlineKeyboard(buttonsJson: string | null): InlineKeyboard | undefined {
@@ -33,7 +35,35 @@ export function initScheduler(bot: Bot<Context>): void {
         schedulePost(bot, post);
     }
 
+    initForwardScheduler(bot);
+
     console.log(`✅ Tüm zamanlanmış gönderiler aktif.`);
+}
+
+function initForwardScheduler(bot: Bot<Context>): void {
+    try {
+        const db = getDb();
+        const forwards = db.prepare('SELECT * FROM scheduled_forwards WHERE is_active = 1').all() as {
+            id: number; source_chat_id: string; message_id: number; target_chat_id: string; cron_expression: string;
+        }[];
+
+        for (const fw of forwards) {
+            if (!cron.validate(fw.cron_expression)) continue;
+            const task = cron.schedule(fw.cron_expression, async () => {
+                try {
+                    await bot.api.forwardMessage(fw.target_chat_id, fw.source_chat_id, fw.message_id);
+                    console.log(`📤 [ForwardSchedule #${fw.id}] ✅ ${fw.source_chat_id}/${fw.message_id} → ${fw.target_chat_id}`);
+                } catch (err: any) {
+                    console.error(`📤 [ForwardSchedule #${fw.id}] ❌ Hata:`, err.message);
+                }
+            }, { timezone: 'Europe/Istanbul' });
+            forwardTasks.push(task);
+        }
+
+        console.log(`📅 ${forwards.length} zamanlanmış iletim yüklendi.`);
+    } catch (err) {
+        console.error('ForwardScheduler başlatma hatası:', err);
+    }
 }
 
 export function schedulePost(bot: Bot<Context>, post: ScheduledPost): boolean {
