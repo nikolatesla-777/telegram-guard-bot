@@ -3,6 +3,7 @@ import { Bot, Context } from 'grammy';
 import { getDb } from '../../database';
 
 const SOURCE_URL = 'https://t.me/s/Hitbetresmi';
+const HITBET_CHANNEL_ID = -1001181924039;
 const TARGET_CHAT = '@cerrahvip';
 const MAX_DAILY = 4;
 
@@ -123,22 +124,8 @@ async function runScraper(bot: Bot<Context>): Promise<void> {
         }
 
         try {
-            if (post.imageUrl) {
-                try {
-                    // Görseli indir ve InputFile olarak gönder
-                    const imgRes = await fetch(post.imageUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-                    const buffer = Buffer.from(await imgRes.arrayBuffer());
-                    const { InputFile } = await import('grammy');
-                    await bot.api.sendPhoto(TARGET_CHAT, new InputFile(buffer, 'photo.jpg'), {
-                        caption: post.text.substring(0, 1024),
-                    });
-                } catch {
-                    // Görsel indirilemezse sadece metin gönder
-                    await bot.api.sendMessage(TARGET_CHAT, post.text);
-                }
-            } else {
-                await bot.api.sendMessage(TARGET_CHAT, post.text);
-            }
+            // Gerçek iletim (forward) yap
+            await bot.api.forwardMessage(TARGET_CHAT, HITBET_CHANNEL_ID, Number(post.id));
 
             markAsSeen(post.id);
             incrementDailyCount();
