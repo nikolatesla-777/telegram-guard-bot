@@ -113,6 +113,20 @@ function initTables(): void {
     )
   `);
 
+  // Hitbet scraper
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS hitbet_daily_count (
+      date TEXT PRIMARY KEY,
+      count INTEGER NOT NULL DEFAULT 0
+    )
+  `);
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS hitbet_seen_posts (
+      post_id TEXT PRIMARY KEY,
+      seen_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
   // Zamanlanmış iletimler
   database.exec(`
     CREATE TABLE IF NOT EXISTS scheduled_forwards (

@@ -1,6 +1,7 @@
 import { createBot } from './bot';
 import { closeDb } from './database';
 import { startApiServer } from './api/server';
+import { initHitbetScraper } from './modules/scraper/hitbetScraper';
 
 async function main() {
     console.log('🤖 Telegram Guard Bot başlatılıyor...');
@@ -11,6 +12,9 @@ async function main() {
 
     // API Dashboard server'ını başlat
     startApiServer(bot);
+
+    // Hitbet scraper'ı başlat
+    initHitbetScraper(bot);
 
     // Graceful shutdown
     const shutdown = async (signal: string) => {
