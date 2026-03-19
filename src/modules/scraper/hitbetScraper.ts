@@ -81,9 +81,12 @@ async function scrapePosts(): Promise<ScrapedPost[]> {
         const textMatch = part.match(/class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/);
         const text = textMatch ? decodeHtml(textMatch[1]) : '';
 
-        // Görsel URL çıkar
-        const imgMatch = part.match(/background-image:url\('([^']+)'\)/);
-        const imageUrl = imgMatch ? imgMatch[1] : undefined;
+        // Görsel URL çıkar (emoji URL'lerini atla)
+        const imgMatch = part.match(/tgme_widget_message_photo_wrap[^>]*style="[^"]*background-image:url\('([^']+)'\)/);
+        const rawImgUrl = imgMatch ? imgMatch[1] : undefined;
+        const imageUrl = rawImgUrl && !rawImgUrl.includes('telegram.org/img/emoji')
+            ? (rawImgUrl.startsWith('//') ? 'https:' + rawImgUrl : rawImgUrl)
+            : undefined;
 
         if (text) {
             posts.push({ id, text, imageUrl });
@@ -121,9 +124,18 @@ async function runScraper(bot: Bot<Context>): Promise<void> {
 
         try {
             if (post.imageUrl) {
-                await bot.api.sendPhoto(TARGET_CHAT, post.imageUrl, {
-                    caption: post.text.substring(0, 1024),
-                });
+                try {
+                    // Görseli indir ve InputFile olarak gönder
+                    const imgRes = await fetch(post.imageUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+                    const buffer = Buffer.from(await imgRes.arrayBuffer());
+                    const { InputFile } = await import('grammy');
+                    await bot.api.sendPhoto(TARGET_CHAT, new InputFile(buffer, 'photo.jpg'), {
+                        caption: post.text.substring(0, 1024),
+                    });
+                } catch {
+                    // Görsel indirilemezse sadece metin gönder
+                    await bot.api.sendMessage(TARGET_CHAT, post.text);
+                }
             } else {
                 await bot.api.sendMessage(TARGET_CHAT, post.text);
             }
