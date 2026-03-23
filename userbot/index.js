@@ -123,7 +123,9 @@ async function main() {
     }, new NewMessage({ chats: [SOURCE_CHANNEL] }));
 
     console.log(`🤖 Userbot aktif — @${SOURCE_CHANNEL} dinleniyor...`);
-    await client.run();
+
+    // Bağlantıyı canlı tut
+    await new Promise(() => {});
 }
 
 main().catch(console.error);
