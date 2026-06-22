@@ -113,6 +113,96 @@ function initTables(): void {
     )
   `);
 
+  // ═══════════════════════════════════════════
+  // Tahmin Oyunu tabloları
+  // ═══════════════════════════════════════════
+
+  // Kullanıcı profilleri + puan tablosu
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS prediction_users (
+      user_id INTEGER PRIMARY KEY,
+      username TEXT,
+      first_name TEXT,
+      total_points INTEGER NOT NULL DEFAULT 0,
+      total_predictions INTEGER NOT NULL DEFAULT 0,
+      correct_predictions INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
+  // Takip edilen maçlar (ESPN event ID + sonuç)
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS prediction_matches (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      espn_event_id TEXT UNIQUE NOT NULL,
+      espn_league_id TEXT NOT NULL,
+      home_team TEXT NOT NULL,
+      away_team TEXT NOT NULL,
+      league TEXT NOT NULL,
+      start_time INTEGER NOT NULL,
+      status TEXT NOT NULL DEFAULT 'scheduled',
+      home_score INTEGER DEFAULT NULL,
+      away_score INTEGER DEFAULT NULL,
+      result TEXT DEFAULT NULL,
+      result_announced INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
+  // Gönderilen anketler (match_id + chat_id + poll_id)
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS prediction_polls (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      match_id INTEGER NOT NULL,
+      chat_id TEXT NOT NULL,
+      poll_message_id INTEGER NOT NULL,
+      telegram_poll_id TEXT NOT NULL,
+      sent_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(match_id, chat_id)
+    )
+  `);
+
+  // Oylar (user_id + match_id + vote + is_correct)
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS prediction_votes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      match_id INTEGER NOT NULL,
+      vote TEXT NOT NULL,
+      is_correct INTEGER DEFAULT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(user_id, match_id)
+    )
+  `);
+
+  // Skor tahmini oyları
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS score_votes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      match_id INTEGER NOT NULL,
+      home_guess INTEGER NOT NULL,
+      away_guess INTEGER NOT NULL,
+      is_correct INTEGER DEFAULT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(user_id, match_id)
+    )
+  `);
+
+  // Skor duyuruları (tekrar gönderimini önler)
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS score_announcements (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      match_id INTEGER NOT NULL,
+      chat_id TEXT NOT NULL,
+      message_id INTEGER,
+      sent_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(match_id, chat_id)
+    )
+  `);
+
   // Hitbet scraper
   database.exec(`
     CREATE TABLE IF NOT EXISTS hitbet_daily_count (
