@@ -59,9 +59,9 @@ async function fetchCompletedFromScoreboard(league: string, dateStr: string): Pr
 export async function checkResults(bot: Bot<Context>): Promise<void> {
     const db = getDb();
     const now = Date.now();
-    // 90 dk önce başlamış ama henüz bitmemiş maçlar (son 8 saat içinde)
+    // 90 dk önce başlamış ama henüz bitmemiş maçlar (son 48 saat içinde)
     const cutoff = now - 90 * 60 * 1000;
-    const oldestToCheck = now - 8 * 60 * 60 * 1000;
+    const oldestToCheck = now - 48 * 60 * 60 * 1000;
 
     const pendingMatches = db.prepare(`
         SELECT * FROM prediction_matches
@@ -74,10 +74,13 @@ export async function checkResults(bot: Bot<Context>): Promise<void> {
     if (pendingMatches.length === 0) return;
 
     // Ligler ve tarihler bazında grupla (API çağrısını minimize et)
+    // Her maç için hem kendi tarihini hem önceki günü ekle (gece yarısı geçişlerinde ESPN tarih kayması)
     const leagueDatePairs = new Set<string>();
     for (const m of pendingMatches) {
         const dateStr = istanbulDateOf(m.start_time);
+        const prevDateStr = istanbulDateOf(m.start_time - 24 * 60 * 60 * 1000);
         leagueDatePairs.add(`${m.espn_league_id}|${dateStr}`);
+        leagueDatePairs.add(`${m.espn_league_id}|${prevDateStr}`);
     }
 
     // Tüm sonuçları çek
