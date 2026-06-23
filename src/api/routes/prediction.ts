@@ -62,7 +62,16 @@ export function createPredictionRoutes(): Router {
                 LIMIT 10
             `).all(userId);
 
-            res.json({ ...stats, recent_votes: recentVotes });
+            const recentScoreVotes = db.prepare(`
+                SELECT sv.*, m.home_team, m.away_team, m.league, m.home_score, m.away_score, m.status
+                FROM score_votes sv
+                INNER JOIN prediction_matches m ON m.id = sv.match_id
+                WHERE sv.user_id = ?
+                ORDER BY sv.created_at DESC
+                LIMIT 10
+            `).all(userId);
+
+            res.json({ ...stats, recent_votes: recentVotes, recent_score_votes: recentScoreVotes });
         } catch (err: any) {
             res.status(500).json({ error: err.message });
         }
