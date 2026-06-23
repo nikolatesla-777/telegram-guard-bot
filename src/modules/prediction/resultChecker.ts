@@ -203,27 +203,30 @@ async function announceResult(
     const totalGoals = result.homeScore + result.awayScore;
     const overUnderLabel = totalGoals >= 3 ? `⬆️ 2.5 ÜST (${totalGoals} gol)` : `⬇️ 2.5 ALT (${totalGoals} gol)`;
 
+    // HTML encode (< > & karakterleri)
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
     let votersText = '';
     if (correctVoters.length === 0) {
         votersText = 'Kimse doğru tahmin yapamadı 😅';
     } else if (correctVoters.length <= 5) {
-        votersText = `Tebrikler: ${correctVoters.join(', ')}`;
+        votersText = `Tebrikler: ${correctVoters.map(esc).join(', ')}`;
     } else {
-        const shown = correctVoters.slice(0, 5).join(', ');
+        const shown = correctVoters.slice(0, 5).map(esc).join(', ');
         votersText = `Tebrikler: ${shown} +${correctVoters.length - 5} kişi daha`;
     }
 
     let scorersText = '';
     if (correctScorers.length > 0) {
-        const shown = correctScorers.slice(0, 5).join(', ');
+        const shown = correctScorers.slice(0, 5).map(esc).join(', ');
         const extra = correctScorers.length > 5 ? ` +${correctScorers.length - 5} kişi daha` : '';
         scorersText = `\n🎯 Doğru Skor (${result.homeScore}-${result.awayScore}) bilenler (+20 puan): ${shown}${extra}`;
     }
 
     const text =
-        `✅ *MAÇIN SONUCU*\n` +
-        `⚽ ${match.home_team} ${result.homeScore} - ${result.awayScore} ${match.away_team}\n` +
-        `📊 Sonuç: ${resultLabel} • ${overUnderLabel}\n\n` +
+        `✅ <b>MAÇIN SONUCU</b>\n` +
+        `⚽ ${esc(match.home_team)} ${result.homeScore} - ${result.awayScore} ${esc(match.away_team)}\n` +
+        `📊 Sonuç: ${esc(resultLabel)} • ${overUnderLabel}\n\n` +
         `🎯 Doğru tahmin yapanlar (${correctVoters.length} kişi):\n${votersText}` +
         `${scorersText}\n\n` +
         `Puan tablonuz güncellendi!\n/siralama ile sıralamanı gör 👇`;
@@ -231,16 +234,7 @@ async function announceResult(
     for (const chatId of groups) {
         try {
             // Sonuç görseli gönder
-            try {
-                const imageUrl = buildResultImageUrl(match.home_team, match.away_team, result.homeScore, result.awayScore);
-                const imgBuffer = await fetchImageBuffer(imageUrl);
-                await bot.api.sendPhoto(chatId, new InputFile(imgBuffer, 'result.jpg'), {
-                    caption: text,
-                    parse_mode: 'Markdown',
-                });
-            } catch {
-                await bot.api.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-            }
+            await bot.api.sendMessage(chatId, text, { parse_mode: 'HTML' });
             console.log(`[ResultChecker] ✅ Sonuç duyuruldu: ${match.home_team} ${result.homeScore}-${result.awayScore} ${match.away_team} → ${chatId}`);
         } catch (err) {
             console.error(`[ResultChecker] Duyuru gönderilemedi (${chatId}):`, err);
