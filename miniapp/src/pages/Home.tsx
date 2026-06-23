@@ -602,8 +602,9 @@ export default function Home() {
     fetch('/api/prediction/matches')
       .then(r => r.json())
       .then(data => {
-        setTodayMatches(data.today || []);
-        setTomorrowMatches(data.tomorrow || []);
+        const active = (m: Match) => m.status !== 'finished';
+        setTodayMatches((data.today || []).filter(active));
+        setTomorrowMatches((data.tomorrow || []).filter(active));
       })
       .catch(console.error)
       .finally(() => setLoading(false));

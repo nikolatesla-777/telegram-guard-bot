@@ -8,6 +8,7 @@ import { createTriggerRoutes } from './routes/triggers';
 import { createStatsRoutes } from './routes/stats';
 import { createChannelRoutes } from './routes/channel';
 import { createSpamRoutes } from './routes/spam';
+import { createPredictionRoutes } from './routes/prediction';
 
 export function startApiServer(bot: Bot<Context>): void {
     const app = express();
@@ -19,6 +20,10 @@ export function startApiServer(bot: Bot<Context>): void {
     // Serve dashboard static files
     const dashboardPath = path.join(__dirname, '..', '..', 'dashboard', 'dist');
     app.use(express.static(dashboardPath));
+
+    // Serve Mini App static files
+    const miniAppPath = path.join(__dirname, '..', '..', 'miniapp', 'dist');
+    app.use('/app', express.static(miniAppPath));
 
     // API key auth middleware
     const authMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
@@ -43,7 +48,15 @@ export function startApiServer(bot: Bot<Context>): void {
     app.use('/api/channel', authMiddleware, createChannelRoutes(bot));
     app.use('/api/spam', authMiddleware, createSpamRoutes());
 
-    // SPA fallback
+    // Prediction routes (Mini App'ten gelen istekler için auth farklı — initData doğrulama)
+    app.use('/api/prediction', createPredictionRoutes());
+
+    // Mini App SPA fallback
+    app.get('/app/{*splat}', (_req, res) => {
+        res.sendFile(path.join(miniAppPath, 'index.html'));
+    });
+
+    // Dashboard SPA fallback
     app.get('/{*splat}', (_req, res) => {
         res.sendFile(path.join(dashboardPath, 'index.html'));
     });
